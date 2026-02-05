@@ -9,12 +9,15 @@
     "preview": "vite preview"
   },
   "devDependencies": {
+    "@types/earcut": "^3.0.0",
     "typescript": "~6.0.2",
     "vite": "^8.0.4"
   },
   "dependencies": {
     "@babylonjs/core": "^9.1.0",
+    "@babylonjs/gui": "^9.3.3",
     "@babylonjs/inspector": "^9.2.0",
-    "@babylonjs/loaders": "^9.1.0"
+    "@babylonjs/loaders": "^9.1.0",
+    "earcut": "^3.0.2"
   }
 }

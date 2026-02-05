@@ -2,6 +2,7 @@ import { SceneLoader, Material, ActionManager, ExecuteCodeAction } from '@babylo
 import type { Scene, AbstractMesh } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import type { ModelTransform } from './types';
+import { AnnotationManager } from './modules/AnnotationManager';
 
 /**
  * Manages external asset loading for the scene.
@@ -21,7 +22,8 @@ export class AssetManager {
         const {
             fileName,
             shadowGenerator,
-            animate
+            animate,
+            annotations
         } = options;
 
         try {
@@ -82,6 +84,13 @@ export class AssetManager {
                         );
                     }
                 });
+            }
+
+            // Generate Annotations if provided
+            if (annotations && annotations.lines && annotations.lines.length > 0) {
+                // Determine our target root (usually meshes[0] is the Transform root)
+                const targetRoot = result.meshes[0];
+                AnnotationManager.addAnnotations(scene, targetRoot, annotations);
             }
         } catch (error) {
             console.error(`Failed to load model ${fileName}:`, error);

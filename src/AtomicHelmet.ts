@@ -14,7 +14,8 @@ import {
     Animation
 } from '@babylonjs/core';
 
-import '@babylonjs/loaders/glTF';
+import { AnnotationManager } from './modules/AnnotationManager';
+import type { AnnotationConfig } from './types';
 
 /**
  * JS parallel: Using a const object and type to replace enum due to erasableSyntaxOnly setting.
@@ -51,7 +52,7 @@ export class AtomicHelmet {
     private flashSphere: Mesh;
     private flashMaterial: StandardMaterial;
 
-    constructor(scene: Scene, position: Vector3) {
+    constructor(scene: Scene, position: Vector3, annotations?: AnnotationConfig) {
         this.scene = scene;
         
         // JS parallel: Providing an invisible root mesh that acts as a bounding container. 
@@ -76,6 +77,10 @@ export class AtomicHelmet {
         this.flashMaterial.alpha = 0;
         this.flashSphere.material = this.flashMaterial;
         this.flashSphere.scaling = Vector3.Zero();
+
+        if (annotations && annotations.lines.length > 0) {
+            AnnotationManager.addAnnotations(scene, this.rootNode, annotations);
+        }
     }
 
     public get position(): Vector3 {

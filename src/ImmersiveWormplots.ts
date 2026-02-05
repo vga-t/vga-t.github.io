@@ -11,6 +11,8 @@ import {
     ActionManager,
     ExecuteCodeAction
 } from '@babylonjs/core';
+import { AnnotationManager } from './modules/AnnotationManager';
+import type { AnnotationConfig } from './types';
 
 /**
  * Minimal 3D Perlin Noise Implementation.
@@ -97,6 +99,8 @@ export interface WormplotConfig {
     pointCount: number;
     /** Optional URL to open when the visualization is clicked */
     clickUrl?: string;
+    /** 3D Text annotations to parent to this structure */
+    annotations?: AnnotationConfig;
 }
 
 /**
@@ -150,6 +154,10 @@ export class ImmersiveWormplots {
 
         this.initializeTubes();
         this.startAnimation();
+
+        if (this.config.annotations && this.config.annotations.lines.length > 0) {
+            AnnotationManager.addAnnotations(this.scene, this.rootNode, this.config.annotations);
+        }
     }
 
     private initializeTubes(): void {
@@ -303,6 +311,10 @@ export class ImmersiveWormplots {
                     radiusFunction, // Dynamically calculates thickness using our variance noise
                     instance: tubeData.mesh // Tells Babylon we are updating vertices, not allocating new Memory
                 }, this.scene);
+
+                // Update bounding info so pointer raycasts correctly intersect the new geometry.
+                // JS parallel: Syncs the collision/picking envelope with the newly rendered geometry.
+                tubeData.mesh.refreshBoundingInfo();
             }
         });
     }

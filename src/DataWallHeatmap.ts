@@ -10,6 +10,8 @@ import {
     ActionManager,
     ExecuteCodeAction
 } from '@babylonjs/core';
+import { AnnotationManager } from './modules/AnnotationManager';
+import type { AnnotationConfig } from './types';
 
 export interface DataWallConfig {
     displayWidth: number;
@@ -17,6 +19,7 @@ export interface DataWallConfig {
     rows: number;
     columns: number;
     clickUrl?: string;
+    annotations?: AnnotationConfig;
 }
 
 /**
@@ -52,6 +55,10 @@ export class DataWallHeatmap {
         this.root.scaling = scaling;
 
         this.buildWall(fullConfig);
+
+        if (fullConfig.annotations && fullConfig.annotations.lines.length > 0) {
+            AnnotationManager.addAnnotations(this.scene, this.root, fullConfig.annotations);
+        }
     }
 
     private buildWall(config: DataWallConfig): void {

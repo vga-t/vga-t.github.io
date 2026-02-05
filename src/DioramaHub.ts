@@ -8,6 +8,7 @@ import {
     // MeshBuilder,
     // PBRMaterial,
     Color3,
+    // UniversalCamera,
     ArcRotateCamera,
     // DefaultRenderingPipeline,
     // SSAO2RenderingPipeline,
@@ -62,7 +63,13 @@ export class DioramaHub {
             position: new Vector3(17.82, 5.79, -8.73),
             rotation: new Vector3(0, -19, 0), // Rotated 45 degrees
             scaling: new Vector3(6.0, 6.0, 6.0),
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["B.tech in Electronics and Communication Engineering", "Cochin University of Science and Technology", "2016-2020"],
+                color: "#f0a400ff",
+                size: 15,
+                fontWeight: "bold"
+            }
         });
 
         // 3. Load the Rostock Building (Right side of island)
@@ -71,7 +78,13 @@ export class DioramaHub {
             position: new Vector3(-9.57, 5.94, -3.24),
             rotation: new Vector3(0, 131, 0), // Rotated -30 degrees
             scaling: new Vector3(7.1, 8.6, 7.1),
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["MS in Visual Computing", "University of Rostock", "2022-2025"],
+                color: "#885717ff",
+                size: 15,
+                fontWeight: "bold",
+            }
         });
 
         AssetManager.loadModel(this.scene, {
@@ -79,7 +92,13 @@ export class DioramaHub {
             position: new Vector3(19.09, 7.48, -1.72),
             rotation: new Vector3(0, 114, 0), // Rotated -30 degrees
             scaling: new Vector3(5.3, 5.3, 5.3),
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["Research intern", "Bhabha Atomic Reserach Center"],
+                color: "#8f9294ff",
+                size: 15,
+                fontWeight: "bold"
+            }
         });
 
 
@@ -89,7 +108,14 @@ export class DioramaHub {
             rotation: new Vector3(0, 13 * DEG2RAD, 0), // Rotated -30 degrees
             scaling: new Vector3(0.05, 0.05, 0.05),
             clickUrl: "mailto:vipingabraham@yahoo.com",
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["Contact Me"],
+                color: "#dbc500ff",
+                worldOffset: [0.361, 3.425, -0.086],
+                size: 15,
+                fontWeight: "bold"
+            }
         });
 
         // 5. Load the Animated Github Kitten
@@ -100,7 +126,13 @@ export class DioramaHub {
             scaling: new Vector3(2.5, 2.5, 2.5),
             animate: true,
             clickUrl: "https://github.com/vga-t",
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["GitHub", "@vga-t"],
+                color: "#000000ff",
+                size: 15,
+                fontWeight: "bold"
+            }
         });
 
         AssetManager.loadModel(this.scene, {
@@ -110,12 +142,24 @@ export class DioramaHub {
             scaling: new Vector3(-1.0, -1.0, 1.0),
             coordinateSystem: "right-handed",
             clickUrl: "https://www.linkedin.com/in/vipingabraham",
-            shadowGenerator
+            shadowGenerator,
+            annotations: {
+                lines: ["LinkedIn"],
+                color: "#5DADE2",
+                size: 15,
+                fontWeight: "bold",
+                worldOffset: [0.093, 2.563, -0.203],
+            }
         });
 
         // 6. Load the Atomic Helmet interaction feature
         // Positioned centrally above the floating island plateau
-        const atomicHelmet = new AtomicHelmet(this.scene, new Vector3(0, 5.5, 0));
+        const atomicHelmet = new AtomicHelmet(this.scene, new Vector3(0, 5.5, 0), {
+            lines: ["Project", "PBR Renderer"],
+            color: "#1345ebff",
+            size: 15,
+            fontWeight: "bold"
+        });
 
         atomicHelmet.load();
         atomicHelmet.position = new Vector3(-2.81, 6.00, -0.44);
@@ -127,7 +171,14 @@ export class DioramaHub {
         // Positioned high above the island for clear visibility.
         new ImmersiveWormplots(this.scene, new Vector3(1.08, 5.48, 3.37), new Vector3(0, 39 * DEG2RAD, 0), {
             masterScale: 0.2, // Slightly enlarged for initial visibility
-            clickUrl: "https://vga-t.github.io/Immersive-Wormplots-in-VR/"
+            clickUrl: "https://vga-t.github.io/Immersive-Wormplots-in-VR/",
+            annotations: {
+                lines: ["Project", "Immersive Wormplot Visualization in VR"],
+                color: "#e000e7ff",
+                size: 15,
+                fontWeight: "bold",
+                worldOffset: [-0.919, 2.950, 0.000]
+            }
         });
 
         // 8. Load the Data Wall Heatmap
@@ -142,7 +193,13 @@ export class DioramaHub {
                 displayHeight: 4,
                 rows: 30,
                 columns: 15,
-                clickUrl: "https://tabularwall.vercel.app/"
+                clickUrl: "https://tabularwall.vercel.app/",
+                annotations: {
+                    lines: ["Master thesis", "AI-assisted Interactive Visualization on Large Curved Virtual Display Surfaces"],
+                    color: "#36ac54ff",
+                    size: 15,
+                    fontWeight: "bold"
+                }
             }
         );
     }
@@ -217,7 +274,7 @@ export class DioramaHub {
         camera.upperRadiusLimit = 60;
 
         // Disable panning completely
-        camera.panningSensibility = 0;
+        camera.panningSensibility = 1500;
 
         // Attach user control
         camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
@@ -231,13 +288,6 @@ export class DioramaHub {
         // camera.speed = 0.6;
         // camera.angularSensibility = 1200;
         // camera.maxZ = 20000;
-
-        // // // Keyboard setup: WASD
-        // // camera.keysUp.push(87);    // W
-        // // camera.keysDown.push(83);  // S
-        // // camera.keysLeft.push(65);  // A
-        // // camera.keysRight.push(68); // D
-
         // // // Attach user control
         // camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
     }
