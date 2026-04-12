@@ -1,3 +1,5 @@
+import { Vector3, ShadowGenerator } from '@babylonjs/core';
+
 /**
  * Represents the different states of the portfolio application.
  * Using a const object + union type instead of enum to satisfy 'erasableSyntaxOnly'.
@@ -20,4 +22,16 @@ export interface DioramaConfig {
     width: number;
     depth: number;
     height: number;
+}
+
+/**
+ * Interface for model transformation parameters.
+ * JS parallel: This is like a configuration object used to group related properties.
+ */
+export interface ModelTransform {
+    fileName: string;
+    position?: Vector3;
+    rotation?: Vector3; // Euler angles in radians
+    scaling?: Vector3;
+    shadowGenerator?: ShadowGenerator;
 }

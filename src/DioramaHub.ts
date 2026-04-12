@@ -4,10 +4,11 @@ import {
     HemisphericLight,
     DirectionalLight,
     ShadowGenerator,
-    MeshBuilder,
-    PBRMaterial,
+    // MeshBuilder,
+    // PBRMaterial,
     Color3,
     ArcRotateCamera,
+    UniversalCamera,
     // DefaultRenderingPipeline,
     // SSAO2RenderingPipeline,
     HDRCubeTexture
@@ -15,7 +16,9 @@ import {
 import '@babylonjs/core/Materials/Textures/Loaders/ddsTextureLoader';
 import '@babylonjs/core/Materials/Textures/Loaders/envTextureLoader';
 import '@babylonjs/core/Helpers/sceneHelpers';
-import { ProceduralFence } from './ProceduralFence';
+import '@babylonjs/core/Debug/debugLayer';
+import '@babylonjs/inspector';
+// import { ProceduralFence } from './ProceduralFence';
 import { AssetManager } from './AssetManager';
 
 /**
@@ -32,14 +35,59 @@ export class DioramaHub {
     public build(): void {
         this.setupEnvironment();
         this.setupLighting();
+        this.setupFog();
         this.setupGeometry();
         this.setupCamera();
+        this.setupDebugLayer();
         // this.setupPostProcessingAndFog();
 
-        // Load the building models
         const shadowGenerator = (this.scene as any).metadata.shadowGenerator as ShadowGenerator;
-        AssetManager.loadCusatBuilding(this.scene, shadowGenerator);
-        AssetManager.loadRostockBuilding(this.scene, shadowGenerator);
+
+        // 1. Load the Floating Island (The new base)
+        AssetManager.loadModel(this.scene, {
+            fileName: "floating_island_1k.glb",
+            position: new Vector3(0, 0, 0),
+            scaling: new Vector3(0.25, 0.25, 0.25),
+            shadowGenerator
+        });
+
+        // 2. Load the CUSAT Building (Left side of island)
+        AssetManager.loadModel(this.scene, {
+            fileName: "cusat-final.glb",
+            position: new Vector3(17.82, 5.79, -8.73),
+            rotation: new Vector3(0, -19, 0), // Rotated 45 degrees
+            scaling: new Vector3(6.0, 6.0, 6.0),
+            shadowGenerator
+        });
+
+        // 3. Load the Rostock Building (Right side of island)
+        AssetManager.loadModel(this.scene, {
+            fileName: "uniRostock.glb",
+            position: new Vector3(-9.57, 5.94, -3.24),
+            rotation: new Vector3(0, 131, 0), // Rotated -30 degrees
+            scaling: new Vector3(7.1, 8.6, 7.1),
+            shadowGenerator
+        });
+
+        AssetManager.loadModel(this.scene, {
+            fileName: "atomic_tower.glb",
+            position: new Vector3(19.09, 4.98, -1.72),
+            rotation: new Vector3(0, -42, 0), // Rotated -30 degrees
+            scaling: new Vector3(0.001, 0.001, 0.001),
+            shadowGenerator
+        });
+
+
+        AssetManager.loadModel(this.scene, {
+            fileName: "german_post_box.glb",
+            position: new Vector3(-17.78, 2.98, 5.45),
+            rotation: new Vector3(0, 25, 0), // Rotated -30 degrees
+            scaling: new Vector3(0.05, 0.05, 0.05),
+            shadowGenerator
+        });
+        // 4. Load the Atomic Tower (Back side of island)
+
+
     }
 
     private setupEnvironment(): void {
@@ -47,17 +95,30 @@ export class DioramaHub {
         // Note: The file was moved to /public/sky.hdr so Vite serves it statically
         const hdrTexture = new HDRCubeTexture("/sky.hdr", this.scene, 512);
 
-        // The visual skybox using the HDR texture
-        const skybox = this.scene.createDefaultSkybox(hdrTexture, true, 1000, 0.5); // 0.5 is an optional blur
+        // Increase skybox size and use a slight blur
+        const skybox = this.scene.createDefaultSkybox(hdrTexture, true, 500, 0.1);
+
+        // Optimization: Disable ground projection which often causes "holes" or patches in the lower hemisphere
+        if (skybox && skybox.material && (skybox.material as any).enableGroundProjection !== undefined) {
+            (skybox.material as any).enableGroundProjection = false;
+        }
 
         // Environment texture for Image Based Lighting on PBR Materials
         this.scene.environmentTexture = hdrTexture;
-        this.scene.environmentIntensity = 1.0;
+        this.scene.environmentIntensity = 1.79;
 
-        // Ensure skybox doesn't get hidden by fog (fog is disabled anyway, but good measure)
+        // Ensure skybox doesn't get hidden by depth testing
         if (skybox) {
             skybox.infiniteDistance = true;
         }
+    }
+
+    private setupFog(): void {
+        // JS parallel: Linear fog with specific bounds from the inspector.
+        this.scene.fogMode = Scene.FOGMODE_LINEAR; // Value 3
+        this.scene.fogStart = 0;
+        this.scene.fogEnd = 2000;
+        this.scene.fogColor = new Color3(0.9, 0.95, 1.0);
     }
 
     private setupLighting(): void {
@@ -65,12 +126,16 @@ export class DioramaHub {
         const ambientLight = new HemisphericLight("ambientLight", new Vector3(0, 1, 0), this.scene);
         ambientLight.intensity = 0.4;
 
-        // Key light
+        // Key light: Positioned far away to ensure broad coverage for shadows
         const keyLight = new DirectionalLight("keyLight", new Vector3(1, -1, 1), this.scene);
-        keyLight.intensity = 1.0;
+        keyLight.intensity = 1.2;
+        keyLight.position = new Vector3(-50, 50, -50);
+
+        // Optimization: Handle shadow bounds automatically based on meshes
+        keyLight.autoCalcShadowZBounds = true;
 
         // Shadows
-        const shadowGenerator = new ShadowGenerator(1024, keyLight);
+        const shadowGenerator = new ShadowGenerator(2048, keyLight); // Increased resolution for the small island
         shadowGenerator.useBlurExponentialShadowMap = true;
         shadowGenerator.blurKernel = 32;
 
@@ -79,44 +144,60 @@ export class DioramaHub {
     }
 
     private setupGeometry(): void {
-        const shadowGenerator = (this.scene as any).metadata.shadowGenerator as ShadowGenerator;
-
-        // The Slab: 30x0.2x30 base at Y = -0.1
-        const slab = MeshBuilder.CreateBox("slab", { width: 30, height: 0.2, depth: 30 }, this.scene);
-        slab.position.y = -0.1;
-        slab.receiveShadows = true;
-
-        const slabMat = new PBRMaterial("slabMat", this.scene);
-        slabMat.albedoColor = Color3.FromHexString("#f0f0f0");
-        slabMat.roughness = 0.6;
-        slabMat.metallic = 0.1;
-        slab.material = slabMat;
-
-        // Optimization: Freeze matrix for static root 
-        slab.freezeWorldMatrix();
-
-        if (shadowGenerator) shadowGenerator.addShadowCaster(slab);
-
-        // Build procedural perimeter fences instead of glass panes
-        ProceduralFence.build(this.scene, 30, 30);
+        // We no longer need the slab or fence since we use the floating island model
     }
 
     private setupCamera(): void {
-        const camera = new ArcRotateCamera("camera", Math.PI / 4, Math.PI / 3, 30, Vector3.Zero(), this.scene);
+        /*
+        const camera = new ArcRotateCamera("camera", Math.PI / 4, Math.PI / 3, 35, Vector3.Zero(), this.scene);
 
         // Ensure the camera can see out to the massive skybox
         camera.maxZ = 20000;
-        // Enforce user viewing limits to focus on the 30x30 Diorama
-        camera.lowerBetaLimit = 0.2;
-        camera.upperBetaLimit = 1.45; // Do not look completely underneath
-        camera.lowerRadiusLimit = 10;
-        camera.upperRadiusLimit = 45;
+        // Adjusted limits for floating island viewing
+        camera.lowerBetaLimit = 0.1;
+        camera.upperBetaLimit = 3; // Allow looking slightly underneath the floating island
+        camera.lowerRadiusLimit = 15;
+        camera.upperRadiusLimit = 60;
 
         // Disable panning completely
         camera.panningSensibility = 0;
 
         // Attach user control
         camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
+        */
+
+        // First Person Camera for debugging
+        const camera = new UniversalCamera("debugCamera", new Vector3(0, 8, -25), this.scene);
+        camera.setTarget(Vector3.Zero());
+
+        // Flight speed and FOV
+        camera.speed = 0.6;
+        camera.angularSensibility = 1200;
+        camera.maxZ = 20000;
+
+        // // Keyboard setup: WASD
+        // camera.keysUp.push(87);    // W
+        // camera.keysDown.push(83);  // S
+        // camera.keysLeft.push(65);  // A
+        // camera.keysRight.push(68); // D
+
+        // // Attach user control
+        camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
+    }
+
+    private setupDebugLayer(): void {
+        // JS parallel: Standard event listener for keyboard input.
+        // We use 'keydown' to trigger the action immediately when the key is pressed.
+        window.addEventListener("keydown", (ev) => {
+            if (ev.key === "d" || ev.key === "D") {
+                if (this.scene.debugLayer.isVisible()) {
+                    this.scene.debugLayer.hide();
+                } else {
+                    // This will dynamically load the inspector if it's available
+                    this.scene.debugLayer.show();
+                }
+            }
+        });
     }
 
     // private setupPostProcessingAndFog(): void {
