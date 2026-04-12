@@ -7,7 +7,6 @@ import {
     // MeshBuilder,
     // PBRMaterial,
     Color3,
-    ArcRotateCamera,
     UniversalCamera,
     // DefaultRenderingPipeline,
     // SSAO2RenderingPipeline,
@@ -20,6 +19,7 @@ import '@babylonjs/core/Debug/debugLayer';
 import '@babylonjs/inspector';
 // import { ProceduralFence } from './ProceduralFence';
 import { AssetManager } from './AssetManager';
+import { AtomicHelmet } from './AtomicHelmet';
 
 /**
  * Manages the contents and environment of the 3D diorama.
@@ -85,9 +85,25 @@ export class DioramaHub {
             scaling: new Vector3(0.05, 0.05, 0.05),
             shadowGenerator
         });
-        // 4. Load the Atomic Tower (Back side of island)
 
+        // 5. Load the Animated Github Kitten
+        AssetManager.loadModel(this.scene, {
+            fileName: "github-kitten/source/gitkit_final.glb",
+            position: new Vector3(-14.19, 3.09, 7.94),
+            rotation: new Vector3(0, 173, 0),
+            scaling: new Vector3(2.5, 2.5, 2.5),
+            animate: true,
+            shadowGenerator
+        });
 
+        // 6. Load the Atomic Helmet interaction feature
+        // Positioned centrally above the floating island plateau
+        const atomicHelmet = new AtomicHelmet(this.scene, new Vector3(0, 5.5, 0));
+
+        atomicHelmet.load();
+        atomicHelmet.position = new Vector3(-0.26, 5.5, 2.04);
+        atomicHelmet.rotation = new Vector3(0, -130, 0);
+        atomicHelmet.scaling = new Vector3(0.6, 0.6, 0.6);
     }
 
     private setupEnvironment(): void {

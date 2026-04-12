@@ -34,4 +34,5 @@ export interface ModelTransform {
     rotation?: Vector3; // Euler angles in radians
     scaling?: Vector3;
     shadowGenerator?: ShadowGenerator;
+    animate?: boolean;
 }

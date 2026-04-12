@@ -20,7 +20,8 @@ export class AssetManager {
     ): Promise<void> {
         const { 
             fileName, 
-            shadowGenerator 
+            shadowGenerator,
+            animate
         } = options;
         
         try {
@@ -30,8 +31,15 @@ export class AssetManager {
             // Apply standard transforms to the root node
             this.applyTransform(root, options);
 
-            // Optimization: Freeze matrix for static root to avoid per-frame calculations
-            root.freezeWorldMatrix();
+            // Play animations if requested and available
+            // JS parallel: Start all animation groups to loop by default.
+            if (animate && result.animationGroups.length > 0) {
+                result.animationGroups.forEach(group => group.play(true));
+            } else {
+                // Optimization: Freeze matrix for static root to avoid per-frame calculations.
+                // We only do this for non-animated models to ensure performance.
+                root.freezeWorldMatrix();
+            }
 
             if (shadowGenerator) {
                 result.meshes.forEach((mesh: AbstractMesh) => {
