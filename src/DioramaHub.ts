@@ -42,8 +42,8 @@ export class DioramaHub {
         this.setupCamera();
         this.setupDebugLayer();
         // this.setupPostProcessingAndFog();
-
         const shadowGenerator = (this.scene as any).metadata.shadowGenerator as ShadowGenerator;
+        const DEG2RAD = Math.PI / 180;
 
         // 1. Load the Floating Island (The new base)
         AssetManager.loadModel(this.scene, {
@@ -72,10 +72,10 @@ export class DioramaHub {
         });
 
         AssetManager.loadModel(this.scene, {
-            fileName: "atomic_tower.glb",
-            position: new Vector3(19.09, 4.98, -1.72),
-            rotation: new Vector3(0, -42, 0), // Rotated -30 degrees
-            scaling: new Vector3(0.001, 0.001, 0.001),
+            fileName: "reactor.glb",
+            position: new Vector3(19.09, 7.48, -1.72),
+            rotation: new Vector3(0, 114, 0), // Rotated -30 degrees
+            scaling: new Vector3(5.3, 5.3, 5.3),
             shadowGenerator
         });
 
@@ -95,6 +95,15 @@ export class DioramaHub {
             rotation: new Vector3(0, 173, 0),
             scaling: new Vector3(2.5, 2.5, 2.5),
             animate: true,
+            shadowGenerator
+        });
+
+        AssetManager.loadModel(this.scene, {
+            fileName: "linkedin.glb",
+            position: new Vector3(-11.97, 4.69, 9.70),
+            rotation: new Vector3(84 * DEG2RAD, 136 * DEG2RAD, 161 * DEG2RAD),
+            scaling: new Vector3(-1.0, -1.0, 1.0),
+            coordinateSystem: "right-handed",
             shadowGenerator
         });
 
@@ -119,7 +128,7 @@ export class DioramaHub {
         new DataWallHeatmap(
             this.scene,
             new Vector3(1.82, 6.44, -7.01), // Elevated and positioned slightly off-center
-            new Vector3(0, 147, 0), // Rotated slightly to face the main viewing area
+            new Vector3(0, -Math.PI / 4, 0), // Rotated slightly to face the main viewing area
             new Vector3(1, 1, 1),
             {
                 displayWidth: 8,

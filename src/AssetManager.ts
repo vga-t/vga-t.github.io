@@ -1,4 +1,4 @@
-import { SceneLoader } from '@babylonjs/core';
+import { SceneLoader, Material } from '@babylonjs/core';
 import type { Scene, AbstractMesh } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import type { ModelTransform } from './types';
@@ -18,16 +18,16 @@ export class AssetManager {
         scene: Scene,
         options: ModelTransform
     ): Promise<void> {
-        const { 
-            fileName, 
+        const {
+            fileName,
             shadowGenerator,
             animate
         } = options;
-        
+
         try {
             const result = await SceneLoader.ImportMeshAsync("", "/models/", fileName, scene);
             const root = result.meshes[0];
-            
+
             // Apply standard transforms to the root node
             this.applyTransform(root, options);
 
@@ -65,13 +65,18 @@ export class AssetManager {
      */
     public static applyTransform(mesh: AbstractMesh, transform: Partial<ModelTransform>): void {
         if (transform.position) mesh.position = transform.position.clone();
-        
+
         if (transform.rotation) {
             // Clearing rotationQuaternion ensures property 'rotation' is used
             mesh.rotationQuaternion = null;
             mesh.rotation = transform.rotation.clone();
         }
-        
+
         if (transform.scaling) mesh.scaling = transform.scaling.clone();
+
+        if (transform.coordinateSystem === "right-handed") {
+            mesh.scaling.x *= -1;
+            mesh.material.sideOrientation = Material.ClockWiseSideOrientation;
+        }
     }
 }

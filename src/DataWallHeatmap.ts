@@ -5,7 +5,8 @@ import {
     MeshBuilder,
     PBRMaterial,
     Color3,
-    Matrix
+    Matrix,
+    Mesh
 } from '@babylonjs/core';
 
 export interface DataWallConfig {
@@ -72,6 +73,7 @@ export class DataWallHeatmap {
         glassMaterial.metallic = 0.9;
         glassMaterial.roughness = 0.1; // catches reflections well
         glassMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+        glassMaterial.backFaceCulling = false;
         backboard.material = glassMaterial;
 
         // 2. The Data Grid
@@ -83,7 +85,8 @@ export class DataWallHeatmap {
         // Base cell mesh for thin instancing
         const cellMesh = MeshBuilder.CreatePlane("dataWallCell", {
             width: cellWidth,
-            height: cellHeight
+            height: cellHeight,
+            sideOrientation: Mesh.DOUBLESIDE
         }, this.scene);
 
         // Position cellMesh slightly in front of the backboard to avoid Z-fighting
@@ -95,6 +98,7 @@ export class DataWallHeatmap {
         const cellMaterial = new PBRMaterial("dataWallHeatmapMaterial", this.scene);
         cellMaterial.unlit = true;
         cellMaterial.transparencyMode = PBRMaterial.PBRMATERIAL_ALPHABLEND;
+        cellMaterial.backFaceCulling = false;
         cellMesh.material = cellMaterial;
 
         // 3. Thin Instance Generation
