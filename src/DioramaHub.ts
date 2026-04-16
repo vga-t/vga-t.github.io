@@ -21,6 +21,7 @@ import '@babylonjs/inspector';
 import { AssetManager } from './AssetManager';
 import { AtomicHelmet } from './AtomicHelmet';
 import { ImmersiveWormplots } from './ImmersiveWormplots';
+import { DataWallHeatmap } from './DataWallHeatmap';
 
 /**
  * Manages the contents and environment of the 3D diorama.
@@ -112,6 +113,21 @@ export class DioramaHub {
         new ImmersiveWormplots(this.scene, new Vector3(0.00, 5.48, 0.00), new Vector3(0, 96, 0), {
             masterScale: 0.2 // Slightly enlarged for initial visibility
         });
+
+        // 8. Load the Data Wall Heatmap
+        // Positioned near the back to act as a billboard display.
+        new DataWallHeatmap(
+            this.scene,
+            new Vector3(1.82, 6.44, -7.01), // Elevated and positioned slightly off-center
+            new Vector3(0, 147, 0), // Rotated slightly to face the main viewing area
+            new Vector3(1, 1, 1),
+            {
+                displayWidth: 8,
+                displayHeight: 4,
+                rows: 30,
+                columns: 15
+            }
+        );
     }
 
     private setupEnvironment(): void {
