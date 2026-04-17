@@ -20,6 +20,7 @@ import '@babylonjs/inspector';
 // import { ProceduralFence } from './ProceduralFence';
 import { AssetManager } from './AssetManager';
 import { AtomicHelmet } from './AtomicHelmet';
+import { ImmersiveWormplots } from './ImmersiveWormplots';
 
 /**
  * Manages the contents and environment of the 3D diorama.
@@ -104,6 +105,13 @@ export class DioramaHub {
         atomicHelmet.position = new Vector3(-0.26, 5.5, 2.04);
         atomicHelmet.rotation = new Vector3(0, -130, 0);
         atomicHelmet.scaling = new Vector3(0.6, 0.6, 0.6);
+
+        // 7. Load the Immersive Wormplots visualization feature
+        // JS parallel: Initialize the self-contained component anywhere in the scene graph.
+        // Positioned high above the island for clear visibility.
+        new ImmersiveWormplots(this.scene, new Vector3(0.00, 5.48, 0.00), new Vector3(0, 96, 0), {
+            masterScale: 0.2 // Slightly enlarged for initial visibility
+        });
     }
 
     private setupEnvironment(): void {
