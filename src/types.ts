@@ -36,4 +36,5 @@ export interface ModelTransform {
     coordinateSystem?: string;
     shadowGenerator?: ShadowGenerator;
     animate?: boolean;
+    clickUrl?: string;
 }

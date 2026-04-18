@@ -6,7 +6,9 @@ import {
     PBRMaterial,
     Color3,
     Matrix,
-    Mesh
+    Mesh,
+    ActionManager,
+    ExecuteCodeAction
 } from '@babylonjs/core';
 
 export interface DataWallConfig {
@@ -14,6 +16,7 @@ export interface DataWallConfig {
     displayHeight: number;
     rows: number;
     columns: number;
+    clickUrl?: string;
 }
 
 /**
@@ -147,5 +150,32 @@ export class DataWallHeatmap {
 
         // Optimize performance by skipping picking logic for the inner thin instances
         cellMesh.thinInstanceEnablePicking = false;
+
+        // Implement click functionality if a URL is provided
+        // JS parallel: Generic click handler applied to both the frame and the data grid.
+        if (config.clickUrl) {
+            [backboard, cellMesh].forEach(mesh => {
+                mesh.actionManager = new ActionManager(this.scene);
+                mesh.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+                        window.open(config.clickUrl, '_blank');
+                    })
+                );
+
+                mesh.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {
+                        const canvas = this.scene.getEngine().getRenderingCanvas();
+                        if (canvas) canvas.style.cursor = "pointer";
+                    })
+                );
+
+                mesh.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPointerOutTrigger, () => {
+                        const canvas = this.scene.getEngine().getRenderingCanvas();
+                        if (canvas) canvas.style.cursor = "default";
+                    })
+                );
+            });
+        }
     }
 }

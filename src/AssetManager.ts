@@ -1,4 +1,4 @@
-import { SceneLoader, Material } from '@babylonjs/core';
+import { SceneLoader, Material, ActionManager, ExecuteCodeAction } from '@babylonjs/core';
 import type { Scene, AbstractMesh } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import type { ModelTransform } from './types';
@@ -51,6 +51,38 @@ export class AssetManager {
                     }
                 });
             }
+
+            // Implement click functionality if a URL is provided
+            // JS parallel: Assigning an event listener to the 3D entity.
+            if (options.clickUrl) {
+                result.meshes.forEach((mesh: AbstractMesh) => {
+                    if (mesh.getTotalVertices() > 0) {
+                        mesh.actionManager = new ActionManager(scene);
+
+                        // Click action
+                        mesh.actionManager.registerAction(
+                            new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+                                window.open(options.clickUrl, '_blank');
+                            })
+                        );
+
+                        // Cursor feedback on hover
+                        mesh.actionManager.registerAction(
+                            new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {
+                                const canvas = scene.getEngine().getRenderingCanvas();
+                                if (canvas) canvas.style.cursor = "pointer";
+                            })
+                        );
+
+                        mesh.actionManager.registerAction(
+                            new ExecuteCodeAction(ActionManager.OnPointerOutTrigger, () => {
+                                const canvas = scene.getEngine().getRenderingCanvas();
+                                if (canvas) canvas.style.cursor = "default";
+                            })
+                        );
+                    }
+                });
+            }
         } catch (error) {
             console.error(`Failed to load model ${fileName}:`, error);
         }
@@ -76,7 +108,9 @@ export class AssetManager {
 
         if (transform.coordinateSystem === "right-handed") {
             mesh.scaling.x *= -1;
-            mesh.material.sideOrientation = Material.ClockWiseSideOrientation;
+            if (mesh.material) {
+                mesh.material.sideOrientation = Material.ClockWiseSideOrientation;
+            }
         }
     }
 }

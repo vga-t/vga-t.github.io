@@ -7,7 +7,9 @@ import {
     DynamicTexture,
     TransformNode,
     Mesh,
-    Engine
+    Engine,
+    ActionManager,
+    ExecuteCodeAction
 } from '@babylonjs/core';
 
 /**
@@ -93,6 +95,8 @@ export interface WormplotConfig {
     animationSpeed: number;
     /** Number of points making up each tube's spline */
     pointCount: number;
+    /** Optional URL to open when the visualization is clicked */
+    clickUrl?: string;
 }
 
 /**
@@ -203,6 +207,31 @@ export class ImmersiveWormplots {
 
             tube.material = material;
             tube.parent = this.rootNode;
+
+            // Optional click-to-link feature
+            // JS parallel: Attaches interactivity to custom procedural geometry.
+            if (this.config.clickUrl) {
+                tube.actionManager = new ActionManager(this.scene);
+                tube.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPickTrigger, () => {
+                        window.open(this.config.clickUrl, '_blank');
+                    })
+                );
+
+                tube.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPointerOverTrigger, () => {
+                        const canvas = this.scene.getEngine().getRenderingCanvas();
+                        if (canvas) canvas.style.cursor = "pointer";
+                    })
+                );
+
+                tube.actionManager.registerAction(
+                    new ExecuteCodeAction(ActionManager.OnPointerOutTrigger, () => {
+                        const canvas = this.scene.getEngine().getRenderingCanvas();
+                        if (canvas) canvas.style.cursor = "default";
+                    })
+                );
+            }
 
             this.tubes.push({
                 mesh: tube,

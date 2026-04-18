@@ -1,3 +1,4 @@
+import * as BABYLON from '@babylonjs/core';
 import {
     Scene,
     Vector3,
@@ -7,7 +8,7 @@ import {
     // MeshBuilder,
     // PBRMaterial,
     Color3,
-    UniversalCamera,
+    ArcRotateCamera,
     // DefaultRenderingPipeline,
     // SSAO2RenderingPipeline,
     HDRCubeTexture
@@ -32,6 +33,8 @@ export class DioramaHub {
 
     constructor(scene: Scene) {
         this.scene = scene;
+        // JS parallel: Required for Babylon Inspector to function correctly in modular environments.
+        (window as any).BABYLON = BABYLON;
     }
 
     public build(): void {
@@ -82,19 +85,21 @@ export class DioramaHub {
 
         AssetManager.loadModel(this.scene, {
             fileName: "german_post_box.glb",
-            position: new Vector3(-17.78, 2.98, 5.45),
-            rotation: new Vector3(0, 25, 0), // Rotated -30 degrees
+            position: new Vector3(-17.67, 2.98, 4.82),
+            rotation: new Vector3(0, 13 * DEG2RAD, 0), // Rotated -30 degrees
             scaling: new Vector3(0.05, 0.05, 0.05),
+            clickUrl: "mailto:vipingabraham@yahoo.com",
             shadowGenerator
         });
 
         // 5. Load the Animated Github Kitten
         AssetManager.loadModel(this.scene, {
             fileName: "github-kitten/source/gitkit_final.glb",
-            position: new Vector3(-14.19, 3.09, 7.94),
-            rotation: new Vector3(0, 173, 0),
+            position: new Vector3(-14.46, 3.09, 6.68),
+            rotation: new Vector3(4 * DEG2RAD, 143 * DEG2RAD, -0 * DEG2RAD),
             scaling: new Vector3(2.5, 2.5, 2.5),
             animate: true,
+            clickUrl: "https://github.com/vga-t",
             shadowGenerator
         });
 
@@ -104,6 +109,7 @@ export class DioramaHub {
             rotation: new Vector3(84 * DEG2RAD, 136 * DEG2RAD, 161 * DEG2RAD),
             scaling: new Vector3(-1.0, -1.0, 1.0),
             coordinateSystem: "right-handed",
+            clickUrl: "https://www.linkedin.com/in/vipingabraham",
             shadowGenerator
         });
 
@@ -112,29 +118,31 @@ export class DioramaHub {
         const atomicHelmet = new AtomicHelmet(this.scene, new Vector3(0, 5.5, 0));
 
         atomicHelmet.load();
-        atomicHelmet.position = new Vector3(-0.26, 5.5, 2.04);
-        atomicHelmet.rotation = new Vector3(0, -130, 0);
-        atomicHelmet.scaling = new Vector3(0.6, 0.6, 0.6);
+        atomicHelmet.position = new Vector3(-2.81, 6.00, -0.44);
+        atomicHelmet.rotation = new Vector3(0, 112 * DEG2RAD, 0);
+        atomicHelmet.scaling = new Vector3(1.5, 1.5, 1.5);
 
         // 7. Load the Immersive Wormplots visualization feature
         // JS parallel: Initialize the self-contained component anywhere in the scene graph.
         // Positioned high above the island for clear visibility.
-        new ImmersiveWormplots(this.scene, new Vector3(0.00, 5.48, 0.00), new Vector3(0, 96, 0), {
-            masterScale: 0.2 // Slightly enlarged for initial visibility
+        new ImmersiveWormplots(this.scene, new Vector3(1.08, 5.48, 3.37), new Vector3(0, 39 * DEG2RAD, 0), {
+            masterScale: 0.2, // Slightly enlarged for initial visibility
+            clickUrl: "https://vga-t.github.io/Immersive-Wormplots-in-VR/"
         });
 
         // 8. Load the Data Wall Heatmap
         // Positioned near the back to act as a billboard display.
         new DataWallHeatmap(
             this.scene,
-            new Vector3(1.82, 6.44, -7.01), // Elevated and positioned slightly off-center
-            new Vector3(0, -Math.PI / 4, 0), // Rotated slightly to face the main viewing area
+            new Vector3(1.96, 6.51, -7.56), // Elevated and positioned slightly off-center
+            new Vector3(0, 138 * DEG2RAD, 0), // Rotated slightly to face the main viewing area
             new Vector3(1, 1, 1),
             {
                 displayWidth: 8,
                 displayHeight: 4,
                 rows: 30,
-                columns: 15
+                columns: 15,
+                clickUrl: "https://tabularwall.vercel.app/"
             }
         );
     }
@@ -197,7 +205,7 @@ export class DioramaHub {
     }
 
     private setupCamera(): void {
-        /*
+
         const camera = new ArcRotateCamera("camera", Math.PI / 4, Math.PI / 3, 35, Vector3.Zero(), this.scene);
 
         // Ensure the camera can see out to the massive skybox
@@ -213,25 +221,25 @@ export class DioramaHub {
 
         // Attach user control
         camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
-        */
 
-        // First Person Camera for debugging
-        const camera = new UniversalCamera("debugCamera", new Vector3(0, 8, -25), this.scene);
-        camera.setTarget(Vector3.Zero());
 
-        // Flight speed and FOV
-        camera.speed = 0.6;
-        camera.angularSensibility = 1200;
-        camera.maxZ = 20000;
+        // // First Person Camera for debugging
+        // const camera = new UniversalCamera("debugCamera", new Vector3(0, 8, -25), this.scene);
+        // camera.setTarget(Vector3.Zero());
 
-        // // Keyboard setup: WASD
-        // camera.keysUp.push(87);    // W
-        // camera.keysDown.push(83);  // S
-        // camera.keysLeft.push(65);  // A
-        // camera.keysRight.push(68); // D
+        // // Flight speed and FOV
+        // camera.speed = 0.6;
+        // camera.angularSensibility = 1200;
+        // camera.maxZ = 20000;
 
-        // // Attach user control
-        camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
+        // // // Keyboard setup: WASD
+        // // camera.keysUp.push(87);    // W
+        // // camera.keysDown.push(83);  // S
+        // // camera.keysLeft.push(65);  // A
+        // // camera.keysRight.push(68); // D
+
+        // // // Attach user control
+        // camera.attachControl(this.scene.getEngine().getRenderingCanvas(), true);
     }
 
     private setupDebugLayer(): void {
