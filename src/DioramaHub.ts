@@ -38,7 +38,7 @@ export class DioramaHub {
         (window as any).BABYLON = BABYLON;
     }
 
-    public build(): void {
+    public async build(onProgress?: (progress: number) => void): Promise<void> {
         this.setupEnvironment();
         this.setupLighting();
         this.setupFog();
@@ -49,111 +49,159 @@ export class DioramaHub {
         const shadowGenerator = (this.scene as any).metadata.shadowGenerator as ShadowGenerator;
         const DEG2RAD = Math.PI / 180;
 
+        const totalAssets = 9;
+        const loadedRatios = new Array(totalAssets).fill(0);
+
+        const updateOverallProgress = (index: number, ratio: number) => {
+            loadedRatios[index] = Math.min(Math.max(ratio, 0), 1);
+            const overall = loadedRatios.reduce((sum, val) => sum + val, 0) / totalAssets;
+            if (onProgress) {
+                onProgress(overall);
+            }
+        };
+
+        const createProgressHandler = (index: number) => {
+            return (evt: any) => {
+                if (evt && evt.lengthComputable && evt.total > 0) {
+                    updateOverallProgress(index, evt.loaded / evt.total);
+                }
+            };
+        };
+
         // 1. Load the Floating Island (The new base)
-        AssetManager.loadModel(this.scene, {
-            fileName: "floating_island_1k.glb",
-            position: new Vector3(0, 0, 0),
-            scaling: new Vector3(0.25, 0.25, 0.25),
-            shadowGenerator
-        });
+        const p1 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "floating_island_1k.glb",
+                position: new Vector3(0, 0, 0),
+                scaling: new Vector3(0.25, 0.25, 0.25),
+                shadowGenerator
+            },
+            createProgressHandler(0)
+        ).then(() => updateOverallProgress(0, 1));
 
         // 2. Load the CUSAT Building (Left side of island)
-        AssetManager.loadModel(this.scene, {
-            fileName: "cusat-final.glb",
-            position: new Vector3(17.82, 5.79, -8.73),
-            rotation: new Vector3(0, -19, 0), // Rotated 45 degrees
-            scaling: new Vector3(6.0, 6.0, 6.0),
-            shadowGenerator,
-            annotations: {
-                lines: ["B.tech in Electronics and Communication Engineering", "Cochin University of Science and Technology", "2016-2020"],
-                color: "#f0a400ff",
-                size: 15,
-                fontWeight: "bold"
-            }
-        });
+        const p2 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "cusat-final.glb",
+                position: new Vector3(17.82, 5.79, -8.73),
+                rotation: new Vector3(0, -19 * DEG2RAD, 0),
+                scaling: new Vector3(6.0, 6.0, 6.0),
+                shadowGenerator,
+                annotations: {
+                    lines: ["B.tech in Electronics and Communication Engineering", "Cochin University of Science and Technology", "2016-2020"],
+                    color: "#f0a400ff",
+                    size: 15,
+                    fontWeight: "bold"
+                }
+            },
+            createProgressHandler(1)
+        ).then(() => updateOverallProgress(1, 1));
 
         // 3. Load the Rostock Building (Right side of island)
-        AssetManager.loadModel(this.scene, {
-            fileName: "uniRostock.glb",
-            position: new Vector3(-9.57, 5.94, -3.24),
-            rotation: new Vector3(0, 131, 0), // Rotated -30 degrees
-            scaling: new Vector3(7.1, 8.6, 7.1),
-            shadowGenerator,
-            annotations: {
-                lines: ["MS in Visual Computing", "University of Rostock", "2022-2025"],
-                color: "#885717ff",
-                size: 15,
-                fontWeight: "bold",
-            }
-        });
+        const p3 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "uniRostock.glb",
+                position: new Vector3(-9.57, 5.94, -3.24),
+                rotation: new Vector3(0, 131 * DEG2RAD, 0),
+                scaling: new Vector3(7.1, 8.6, 7.1),
+                shadowGenerator,
+                annotations: {
+                    lines: ["MS in Visual Computing", "University of Rostock", "2022-2025"],
+                    color: "#885717ff",
+                    size: 15,
+                    fontWeight: "bold",
+                }
+            },
+            createProgressHandler(2)
+        ).then(() => updateOverallProgress(2, 1));
 
-        AssetManager.loadModel(this.scene, {
-            fileName: "reactor.glb",
-            position: new Vector3(19.09, 7.48, -1.72),
-            rotation: new Vector3(0, 114, 0), // Rotated -30 degrees
-            scaling: new Vector3(5.3, 5.3, 5.3),
-            shadowGenerator,
-            annotations: {
-                lines: ["Research intern", "Bhabha Atomic Reserach Center"],
-                color: "#8f9294ff",
-                size: 15,
-                fontWeight: "bold"
-            }
-        });
+        // 4. Load the Reactor
+        const p4 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "reactor.glb",
+                position: new Vector3(19.09, 7.48, -1.72),
+                rotation: new Vector3(0, 114 * DEG2RAD, 0),
+                scaling: new Vector3(5.3, 5.3, 5.3),
+                shadowGenerator,
+                annotations: {
+                    lines: ["Research intern", "Bhabha Atomic Reserach Center"],
+                    color: "#8f9294ff",
+                    size: 15,
+                    fontWeight: "bold"
+                }
+            },
+            createProgressHandler(3)
+        ).then(() => updateOverallProgress(3, 1));
 
+        // 5. Load German Post Box
+        const p5 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "german_post_box.glb",
+                position: new Vector3(-17.67, 2.98, 4.82),
+                rotation: new Vector3(0, 13 * DEG2RAD, 0), // Rotated -30 degrees
+                scaling: new Vector3(0.05, 0.05, 0.05),
+                clickUrl: "mailto:vipingabraham@yahoo.com",
+                shadowGenerator,
+                annotations: {
+                    lines: ["Contact Me"],
+                    color: "#dbc500ff",
+                    worldOffset: [0.361, 3.425, -0.086],
+                    size: 15,
+                    fontWeight: "bold"
+                }
+            },
+            createProgressHandler(4)
+        ).then(() => updateOverallProgress(4, 1));
 
-        AssetManager.loadModel(this.scene, {
-            fileName: "german_post_box.glb",
-            position: new Vector3(-17.67, 2.98, 4.82),
-            rotation: new Vector3(0, 13 * DEG2RAD, 0), // Rotated -30 degrees
-            scaling: new Vector3(0.05, 0.05, 0.05),
-            clickUrl: "mailto:vipingabraham@yahoo.com",
-            shadowGenerator,
-            annotations: {
-                lines: ["Contact Me"],
-                color: "#dbc500ff",
-                worldOffset: [0.361, 3.425, -0.086],
-                size: 15,
-                fontWeight: "bold"
-            }
-        });
+        // 6. Load the Animated Github Kitten
+        const p6 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "github-kitten/source/gitkit_final.glb",
+                position: new Vector3(-14.46, 3.09, 6.68),
+                rotation: new Vector3(4 * DEG2RAD, 143 * DEG2RAD, -0 * DEG2RAD),
+                scaling: new Vector3(2.5, 2.5, 2.5),
+                animate: true,
+                clickUrl: "https://github.com/vga-t",
+                shadowGenerator,
+                annotations: {
+                    lines: ["GitHub", "@vga-t"],
+                    color: "#000000ff",
+                    size: 15,
+                    fontWeight: "bold"
+                }
+            },
+            createProgressHandler(5)
+        ).then(() => updateOverallProgress(5, 1));
 
-        // 5. Load the Animated Github Kitten
-        AssetManager.loadModel(this.scene, {
-            fileName: "github-kitten/source/gitkit_final.glb",
-            position: new Vector3(-14.46, 3.09, 6.68),
-            rotation: new Vector3(4 * DEG2RAD, 143 * DEG2RAD, -0 * DEG2RAD),
-            scaling: new Vector3(2.5, 2.5, 2.5),
-            animate: true,
-            clickUrl: "https://github.com/vga-t",
-            shadowGenerator,
-            annotations: {
-                lines: ["GitHub", "@vga-t"],
-                color: "#000000ff",
-                size: 15,
-                fontWeight: "bold"
-            }
-        });
+        // 7. Load LinkedIn model
+        const p7 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "linkedin.glb",
+                position: new Vector3(-11.97, 4.69, 9.70),
+                rotation: new Vector3(84 * DEG2RAD, 136 * DEG2RAD, 161 * DEG2RAD),
+                scaling: new Vector3(-1.0, -1.0, 1.0),
+                coordinateSystem: "right-handed",
+                clickUrl: "https://www.linkedin.com/in/vipingabraham",
+                shadowGenerator,
+                annotations: {
+                    lines: ["LinkedIn"],
+                    color: "#5DADE2",
+                    size: 15,
+                    fontWeight: "bold",
+                    worldOffset: [0.093, 2.563, -0.203],
+                }
+            },
+            createProgressHandler(6)
+        ).then(() => updateOverallProgress(6, 1));
 
-        AssetManager.loadModel(this.scene, {
-            fileName: "linkedin.glb",
-            position: new Vector3(-11.97, 4.69, 9.70),
-            rotation: new Vector3(84 * DEG2RAD, 136 * DEG2RAD, 161 * DEG2RAD),
-            scaling: new Vector3(-1.0, -1.0, 1.0),
-            coordinateSystem: "right-handed",
-            clickUrl: "https://www.linkedin.com/in/vipingabraham",
-            shadowGenerator,
-            annotations: {
-                lines: ["LinkedIn"],
-                color: "#5DADE2",
-                size: 15,
-                fontWeight: "bold",
-                worldOffset: [0.093, 2.563, -0.203],
-            }
-        });
-
-        // 6. Load the Atomic Helmet interaction feature
-        // Positioned centrally above the floating island plateau
+        // 8. Load the Atomic Helmet interaction feature
         const atomicHelmet = new AtomicHelmet(this.scene, new Vector3(0, 5.5, 0), {
             lines: ["Project", "PBR Renderer"],
             color: "#1345ebff",
@@ -161,14 +209,14 @@ export class DioramaHub {
             fontWeight: "bold"
         });
 
-        atomicHelmet.load();
-        atomicHelmet.position = new Vector3(-2.81, 6.00, -0.44);
-        atomicHelmet.rotation = new Vector3(0, 112 * DEG2RAD, 0);
-        atomicHelmet.scaling = new Vector3(1.5, 1.5, 1.5);
+        const p8 = atomicHelmet.load(createProgressHandler(7)).then(() => {
+            atomicHelmet.position = new Vector3(-2.81, 6.00, -0.44);
+            atomicHelmet.rotation = new Vector3(0, 112 * DEG2RAD, 0);
+            atomicHelmet.scaling = new Vector3(1.5, 1.5, 1.5);
+            updateOverallProgress(7, 1);
+        });
 
-        // 7. Load the Immersive Wormplots visualization feature
-        // JS parallel: Initialize the self-contained component anywhere in the scene graph.
-        // Positioned high above the island for clear visibility.
+        // 9. Load the Immersive Wormplots visualization feature
         new ImmersiveWormplots(this.scene, new Vector3(1.08, 5.48, 3.37), new Vector3(0, 39 * DEG2RAD, 0), {
             masterScale: 0.2, // Slightly enlarged for initial visibility
             clickUrl: "https://vga-t.github.io/Immersive-Wormplots-in-VR/",
@@ -181,8 +229,7 @@ export class DioramaHub {
             }
         });
 
-        // 8. Load the Data Wall Heatmap
-        // Positioned near the back to act as a billboard display.
+        // 10. Load the Data Wall Heatmap
         new DataWallHeatmap(
             this.scene,
             new Vector3(1.96, 6.51, -7.56), // Elevated and positioned slightly off-center
@@ -202,6 +249,28 @@ export class DioramaHub {
                 }
             }
         );
+
+        // 11. Load Zen Elephant (Software Engineer, 05/2020 – 02/2022)
+        const p9 = AssetManager.loadModel(
+            this.scene,
+            {
+                fileName: "zenElephant.glb",
+                position: new Vector3(20.42, 4.83, -6.39),
+                rotation: new Vector3(0, -60 * DEG2RAD, 0),
+                scaling: new Vector3(1.3, 1.3, 1.3),
+                shadowGenerator,
+                annotations: {
+                    lines: ["Software Engineer", "05/2020 – 02/2022"],
+                    color: "#e67e22",
+                    size: 15,
+                    fontWeight: "bold"
+                }
+            },
+            createProgressHandler(8)
+        ).then(() => updateOverallProgress(8, 1));
+
+        // Await all model load promises
+        await Promise.all([p1, p2, p3, p4, p5, p6, p7, p8, p9]);
     }
 
     private setupEnvironment(): void {

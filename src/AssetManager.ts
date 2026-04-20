@@ -1,4 +1,4 @@
-import { SceneLoader, Material, ActionManager, ExecuteCodeAction } from '@babylonjs/core';
+import { SceneLoader, Material, ActionManager, ExecuteCodeAction, Quaternion } from '@babylonjs/core';
 import type { Scene, AbstractMesh } from '@babylonjs/core';
 import '@babylonjs/loaders/glTF';
 import type { ModelTransform } from './types';
@@ -14,10 +14,12 @@ export class AssetManager {
      * 
      * @param scene The BabylonJS scene
      * @param options The configuration for loading and transforming the model
+     * @param onProgress Optional progress callback
      */
     public static async loadModel(
         scene: Scene,
-        options: ModelTransform
+        options: ModelTransform,
+        onProgress?: (evt: any) => void
     ): Promise<void> {
         const {
             fileName,
@@ -27,11 +29,25 @@ export class AssetManager {
         } = options;
 
         try {
-            const result = await SceneLoader.ImportMeshAsync("", "/models/", fileName, scene);
+            const result = await SceneLoader.ImportMeshAsync("", "/models/", fileName, scene, (evt) => {
+                if (onProgress) {
+                    onProgress(evt);
+                }
+            });
             const root = result.meshes[0];
 
             // Apply standard transforms to the root node
             this.applyTransform(root, options);
+
+            // Fix backface culling issues across all loaded sub-meshes
+            result.meshes.forEach((mesh: AbstractMesh) => {
+                if (mesh.material) {
+                    mesh.material.backFaceCulling = false;
+                    if (options.coordinateSystem === "right-handed") {
+                        mesh.material.sideOrientation = Material.ClockWiseSideOrientation;
+                    }
+                }
+            });
 
             // Play animations if requested and available
             // JS parallel: Start all animation groups to loop by default.
@@ -108,18 +124,17 @@ export class AssetManager {
         if (transform.position) mesh.position = transform.position.clone();
 
         if (transform.rotation) {
-            // Clearing rotationQuaternion ensures property 'rotation' is used
-            mesh.rotationQuaternion = null;
-            mesh.rotation = transform.rotation.clone();
+            if (mesh.rotationQuaternion) {
+                mesh.rotationQuaternion = Quaternion.FromEulerVector(transform.rotation);
+            } else {
+                mesh.rotation = transform.rotation.clone();
+            }
         }
 
         if (transform.scaling) mesh.scaling = transform.scaling.clone();
 
         if (transform.coordinateSystem === "right-handed") {
             mesh.scaling.x *= -1;
-            if (mesh.material) {
-                mesh.material.sideOrientation = Material.ClockWiseSideOrientation;
-            }
         }
     }
 }

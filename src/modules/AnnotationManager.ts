@@ -19,8 +19,8 @@ import type { AnnotationConfig } from '../types';
 // Scratch allocations — reused every frame to avoid garbage-collection pressure.
 // JS parallel: Like pre-allocating a buffer once instead of malloc-ing each frame.
 // ─────────────────────────────────────────────────────────────────────────────
-const _scratchScreen   = new Vector3();
-const _changeEpsilon   = 0.001; // world-unit threshold before console output fires
+const _scratchScreen = new Vector3();
+const _changeEpsilon = 0.001; // world-unit threshold before console output fires
 
 /**
  * Manages 2D GUI annotations displayed above 3D models in the scene.
@@ -82,10 +82,10 @@ export class AnnotationManager {
         const { lines } = config;
 
         // ── Style defaults ──────────────────────────────────────────────────
-        const colorHex    = config.color       ?? '#FFFFFF';
-        const fontSize    = config.size        ?? 20;          // px
-        const fontWeight  = config.fontWeight  ?? 'bold';
-        const fontFamily  = config.fontFamily  ?? 'Arial';
+        const colorHex = config.color ?? '#FFFFFF';
+        const fontSize = Math.round((config.size ?? 15) * 0.6); // 70% of current size
+        const fontWeight = config.fontWeight ?? 'bold';
+        const fontFamily = config.fontFamily ?? 'Arial';
         const lineSpacing = config.lineSpacing ?? 4;           // px between lines
 
         // ── Model absolute position (world space) ───────────────────────────
@@ -98,7 +98,7 @@ export class AnnotationManager {
         // We walk every child mesh and accumulate world-space min/max so that
         // even meshes with negative scaling (e.g. LinkedIn right-handed flip)
         // or deeply nested hierarchies are handled correctly.
-        let wMin = new Vector3( Infinity,  Infinity,  Infinity);
+        let wMin = new Vector3(Infinity, Infinity, Infinity);
         let wMax = new Vector3(-Infinity, -Infinity, -Infinity);
 
         const allMeshes: (TransformNode | AbstractMesh)[] = [targetNode];
@@ -123,7 +123,7 @@ export class AnnotationManager {
         }
 
         const modelCenter = wMax.add(wMin).scale(0.5);
-        const topY        = wMax.y;
+        const topY = wMax.y;
 
         // ── Relative offset (model-space, world units) ──────────────────────
         // This is the mutable closure state. The observer updates it when the
@@ -166,10 +166,10 @@ export class AnnotationManager {
         const gui = this.getGUI(scene);
 
         const panel = new StackPanel(`annoPanel_${targetNode.name}`);
-        panel.isVertical       = true;
+        panel.isVertical = true;
         panel.isHitTestVisible = false;    // labels don't capture mouse events
         panel.horizontalAlignment = Control.HORIZONTAL_ALIGNMENT_LEFT;
-        panel.verticalAlignment   = Control.VERTICAL_ALIGNMENT_TOP;
+        panel.verticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
 
         // We'll set widthInPixels once we know the longest line's character count
         const maxChars = Math.max(...lines.map(l => l.length));
@@ -182,21 +182,21 @@ export class AnnotationManager {
 
         for (let i = 0; i < lines.length; i++) {
             const tb = new TextBlock(`annoText_${targetNode.name}_${i}`, lines[i]);
-            tb.color               = colorHex;
-            tb.fontSize            = fontSize;
-            tb.fontFamily          = fontFamily;
-            tb.fontWeight          = fontWeight;
+            tb.color = colorHex;
+            tb.fontSize = fontSize;
+            tb.fontFamily = fontFamily;
+            tb.fontWeight = fontWeight;
             tb.textHorizontalAlignment = Control.HORIZONTAL_ALIGNMENT_CENTER;
-            tb.textVerticalAlignment   = Control.VERTICAL_ALIGNMENT_TOP;
-            tb.heightInPixels      = fontSize + lineSpacing;
-            tb.widthInPixels       = panelWidth;
-            tb.isHitTestVisible    = false;
+            tb.textVerticalAlignment = Control.VERTICAL_ALIGNMENT_TOP;
+            tb.heightInPixels = fontSize + lineSpacing;
+            tb.widthInPixels = panelWidth;
+            tb.isHitTestVisible = false;
 
             // Visibility-friendly: slightly dark outline via shadow (not a separate mesh)
-            tb.shadowColor   = 'rgba(0,0,0,0.8)';
+            tb.shadowColor = 'rgba(0,0,0,0.8)';
             tb.shadowOffsetX = 1;
             tb.shadowOffsetY = 1;
-            tb.shadowBlur    = 2;
+            tb.shadowBlur = 2;
 
             panel.addControl(tb);
             totalHeight += fontSize + lineSpacing;
@@ -307,7 +307,7 @@ export class AnnotationManager {
 
             panel.isVisible = true;
             panel.leftInPixels = _scratchScreen.x - panelWidth / 2;
-            panel.topInPixels  = _scratchScreen.y - totalHeight / 2;
+            panel.topInPixels = _scratchScreen.y - totalHeight / 2;
         })!;
 
         // Attach observer reference to anchor for cleanup

@@ -107,9 +107,11 @@ export class AtomicHelmet {
         this.rootNode.scaling = value;
     }
 
-    public async load(): Promise<void> {
+    public async load(onProgress?: (evt: any) => void): Promise<void> {
         // Load the helmet
-        const result = await SceneLoader.ImportMeshAsync("", "/models/", "DamagedHelmet.glb", this.scene);
+        const result = await SceneLoader.ImportMeshAsync("", "/models/", "DamagedHelmet.glb", this.scene, (evt) => {
+            if (onProgress) onProgress(evt);
+        });
 
         // Fix: Parent the ENTIRE GLTF root directly to our container using .parent 
         // We use .parent instead of .setParent() here because .setParent attempts to preserve the previous
@@ -123,6 +125,8 @@ export class AtomicHelmet {
         result.meshes.forEach(mesh => {
             // Swap to blueprint material
             if (mesh.material) {
+                // Keep default backface culling (true) so the front-facing geometry renders correctly
+                // and backfaces don't show through front faces.
                 this.originalMaterials.set(mesh, mesh.material);
                 mesh.material = this.blueprintMaterial;
             }
